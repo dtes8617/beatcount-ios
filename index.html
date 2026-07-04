@@ -532,7 +532,9 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
           <p>用瀏覽器的 TTS 唸出數拍，先聽個概念。它是機器音、時間也會抖——
              正式 App 使用<em>真人錄音</em>，由音訊引擎精準鎖在拍點上。
              待決定：人聲用英文數（five、six、seven、eight——台灣舞蹈教室常見）
-             還是中文數（一、二、三…）；此示範用英文。</p>
+             還是中文數（一、二、三…）；此示範用英文。<br>
+             📱 <b>iPhone 注意：</b>網頁語音會被側邊的「靜音」實體開關消音——請切到響鈴模式、調高音量。
+             開啟此開關時會先唸「5, 6, 7, 8」讓你確認有聲音（正式 App 用 AVAudioEngine，靜音開關下照常出聲）。</p>
         </div>
       </div>
 
@@ -836,12 +838,22 @@ window.addEventListener('resize',drawWave);
 $('tgl-voice').addEventListener('click',function(){
   S.voice=!S.voice;this.classList.toggle('on',S.voice);
   this.setAttribute('aria-checked',String(S.voice));
-  if(!S.voice&&window.speechSynthesis)speechSynthesis.cancel();
+  if(!window.speechSynthesis)return;
+  if(S.voice){
+    /* speak inside the tap gesture: unlocks iOS Safari and confirms the audio path */
+    try{
+      speechSynthesis.cancel();
+      var u=new SpeechSynthesisUtterance(S.playing?'':'5, 6, 7, 8');
+      u.rate=2;u.volume=S.voiceVol;u.lang='en-US';
+      speechSynthesis.speak(u);
+    }catch(e){}
+  } else speechSynthesis.cancel();
 });
 function speak(tok){
   if(!S.voice||!S.countsOn||!window.speechSynthesis)return;
   try{
-    speechSynthesis.cancel();
+    /* drop the count if the engine is busy — cancel-then-speak thrash wedges iOS Safari's queue */
+    if(speechSynthesis.speaking||speechSynthesis.pending)return;
     var u=new SpeechSynthesisUtterance(tok.amp?'and':String(tok.n));
     u.rate=2.4;u.volume=S.voiceVol;u.lang='en-US';
     speechSynthesis.speak(u);
