@@ -518,9 +518,9 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
       </section>
 
       <div class="voicebox">
-        <button class="tgl" id="tgl-voice" role="switch" aria-checked="false" aria-label="示範語音"></button>
+        <button class="tgl on" id="tgl-voice" role="switch" aria-checked="true" aria-label="示範語音"></button>
         <div><b>示範語音</b>
-          <p>用瀏覽器的 TTS 唸出數拍，先聽個概念。它是機器音、時間也會抖——
+          <p>預設開啟：用瀏覽器的 TTS 唸出數拍，先聽個概念（按下播放才會出聲；不想聽可關閉）。它是機器音、時間也會抖——
              正式 App 使用<em>真人錄音</em>，由音訊引擎精準鎖在拍點上。
              待決定：人聲用英文數（five、six、seven、eight——台灣舞蹈教室常見）
              還是中文數（一、二、三…）；此示範用英文。<br>
@@ -554,9 +554,9 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
 /* ---------- model ---------- */
 var SONG={bpm:115,dur:271};
 var S={screen:'library',playing:false,t:0,rate:1,tpl:'eight',
-       bpmMult:1,phaseMs:0,anchor:0,countsOn:true,voice:false,voiceVol:.85,
+       bpmMult:1,phaseMs:0,anchor:0,countsOn:true,voice:true,voiceVol:.85,
        pm:'ready',fm:'normal',sheet:false,prev:null,speedTouched:false};
-var lastToken=null,raf=null,lastTs=null,anaTimer=null,bcHide=null;
+var lastToken=null,raf=null,lastTs=null,anaTimer=null,bcHide=null,ttsUnlocked=false;
 
 function bpm(){return SONG.bpm*S.bpmMult}
 function bd(){return 60/bpm()}
@@ -678,6 +678,10 @@ $('btn-manual').addEventListener('click',function(){setPM('ready');setFM('manual
 function setPlay(on){
   if(on&&(S.pm==='analyzing'||S.pm==='failed')) return;
   S.playing=on;
+  /* first play tap doubles as the TTS unlock gesture (iOS blocks non-gesture speech) */
+  if(on&&S.voice&&!ttsUnlocked&&window.speechSynthesis){
+    try{var pu=new SpeechSynthesisUtterance(' ');pu.volume=0;speechSynthesis.speak(pu);ttsUnlocked=true}catch(e){}
+  }
   $('btn-play').textContent=on?'❚❚':'▶';
   $('bc-play').textContent=on?'❚❚':'▶';
   $('btn-play').setAttribute('aria-label',on?'暫停':'播放');
@@ -836,7 +840,7 @@ $('tgl-voice').addEventListener('click',function(){
       speechSynthesis.cancel();
       var u=new SpeechSynthesisUtterance(S.playing?'':'5, 6, 7, 8');
       u.rate=2;u.volume=S.voiceVol;u.lang='en-US';
-      speechSynthesis.speak(u);
+      speechSynthesis.speak(u);ttsUnlocked=true;
     }catch(e){}
   } else speechSynthesis.cancel();
 });
