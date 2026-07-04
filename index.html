@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BeatCount — 設計原型</title>
+<meta name="description" content="BeatCount iOS App 互動設計原型：匯入歌曲、自動偵測節拍、真人語音數拍。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%83%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<style>
+/* ============ page theme tokens ============ */
+:root{
+  --paper:#FAF8F7; --card:#FFFFFF; --ink:#1C171B; --mut:#72666E;
+  --line:rgba(28,23,27,.13); --accent:#D92B55; --accent-soft:rgba(217,43,85,.09);
+  --chip:#F1ECEF;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#141118; --card:#1C1820; --ink:#EFEAEE; --mut:#9C8F98;
+    --line:rgba(239,234,238,.14); --accent:#FF5C7A; --accent-soft:rgba(255,92,122,.12);
+    --chip:#241F29;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141118; --card:#1C1820; --ink:#EFEAEE; --mut:#9C8F98;
+  --line:rgba(239,234,238,.14); --accent:#FF5C7A; --accent-soft:rgba(255,92,122,.12);
+  --chip:#241F29;
+}
+:root[data-theme="light"]{
+  --paper:#FAF8F7; --card:#FFFFFF; --ink:#1C171B; --mut:#72666E;
+  --line:rgba(28,23,27,.13); --accent:#D92B55; --accent-soft:rgba(217,43,85,.09);
+  --chip:#F1ECEF;
+}
+/* ============ in-phone tokens (deliberately single-theme: the app is dark-first) ============ */
+:root{
+  --p-bg:#0B0A0F; --p-sur:#1A1922; --p-sur2:#242330; --p-text:#F5F4F8; --p-sub:#8F8D9C;
+  --p-acc:#FF4562; --p-amber:#FFC24B; --p-line:rgba(255,255,255,.09);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font:15px/1.7 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC",system-ui,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+a{color:var(--accent)}
+
+/* ---- header ---- */
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{
+  font-family:ui-rounded,-apple-system,system-ui,sans-serif;
+  font-size:clamp(28px,4vw,38px);font-weight:800;letter-spacing:-.02em;
+  margin:6px 0 10px;text-wrap:balance;
+}
+.lede{max-width:62ch;color:var(--mut);margin:0 0 8px}
+.meta{font-size:13px;color:var(--mut)}
+.meta strong{color:var(--ink);font-weight:600}
+
+/* ---- flow strip ---- */
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:26px 0 34px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.flow .node{padding:6px 13px;border-radius:999px;background:var(--chip);font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent}
+.flow .node:hover{border-color:var(--accent)}
+.flow .node.now{background:var(--accent);color:#fff}
+.flow .arr{color:var(--mut);font-size:12px}
+.flow .cap{font-size:12px;color:var(--mut);margin-left:auto}
+
+/* ---- main grid ---- */
+.main{display:grid;grid-template-columns:auto 1fr;gap:44px;align-items:start}
+@media(max-width:880px){.main{grid-template-columns:1fr}}
+.stage{position:sticky;top:24px}
+@media(max-width:880px){.stage{position:static;display:flex;justify-content:center}}
+
+/* ---- tabs ---- */
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;background:var(--chip);border:1px solid transparent;color:var(--ink)}
+.tab:hover{border-color:var(--accent)}
+.tab.on{background:var(--accent);color:#fff}
+.tab:focus-visible,.chip:focus-visible,.flow .node:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---- phone frame ---- */
+.phone-outer{width:399px;max-width:100%}
+.phone{
+  position:relative;width:375px;height:812px;margin:0 auto;background:var(--p-bg);
+  border-radius:54px;overflow:hidden;
+  box-shadow:0 0 0 12px #060509,0 0 0 13.5px #3a3742,0 24px 60px rgba(0,0,0,.35);
+}
+.island{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:118px;height:34px;border-radius:20px;background:#000;z-index:60}
+@media(max-width:440px){
+  .phone-outer{width:315px}
+  .phone{transform:scale(.8);transform-origin:top center;margin-bottom:-162px}
+}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;color:var(--p-text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC",system-ui,sans-serif}
+.screen.on{display:flex}
+.statusbar{height:54px;flex:none}
+
+/* ---- library screen ---- */
+.lib-nav{display:flex;justify-content:space-between;align-items:flex-end;padding:8px 22px 6px}
+.lib-nav h2{font-size:32px;font-weight:800;margin:0;letter-spacing:-.02em}
+.addbtn{width:34px;height:34px;border-radius:50%;background:var(--p-sur2);color:var(--p-acc);border:0;font-size:22px;line-height:1;cursor:pointer;font-weight:600}
+.rows{padding:10px 16px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:12px;background:var(--p-sur);border-radius:14px;padding:12px 14px;cursor:pointer;border:1px solid transparent}
+.row:hover{border-color:var(--p-acc)}
+.row .thumb{width:52px;height:34px;flex:none;border-radius:6px;background:var(--p-sur2);overflow:hidden}
+.row .t1{font-size:15px;font-weight:600}
+.row .t2{font-size:12.5px;color:var(--p-sub);font-variant-numeric:tabular-nums}
+.row .t2 .warn{color:var(--p-amber)}
+.ring{width:26px;height:26px;flex:none;border-radius:50%;border:2.5px solid var(--p-sur2);border-top-color:var(--p-acc);animation:spin 1s linear infinite;margin-left:auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lib-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 34px;gap:10px}
+.lib-empty .note-ico{font-size:44px}
+.lib-empty h3{margin:0;font-size:20px;font-weight:700}
+.lib-empty p{margin:0;font-size:14px;color:var(--p-sub)}
+.lib-empty .foot{font-size:11.5px;color:var(--p-sub);opacity:.75;margin-top:14px}
+.cta{background:var(--p-acc);color:#fff;border:0;border-radius:12px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px}
+
+/* ---- player screen ---- */
+.topbar{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:14px}
+.topbar .back{color:var(--p-acc);cursor:pointer;font-weight:500;background:none;border:0;font-size:14px;padding:4px}
+.topbar .title{flex:1;text-align:center;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .act{color:var(--p-acc);cursor:pointer;background:none;border:0;font-size:13px;font-weight:600;padding:4px}
+.countzone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:0}
+.bignum{
+  font-family:ui-rounded,-apple-system,system-ui,sans-serif;
+  font-size:190px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;
+  color:var(--p-text);
+}
+.bignum.one{color:var(--p-acc)}
+.bignum.amp{font-size:120px;color:var(--p-sub)}
+.bignum.dim{opacity:.28}
+.dots{display:flex;gap:10px;margin-top:18px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--p-sur2)}
+.dot.first{width:12px;height:12px}
+.dot.hit{background:var(--p-text)}
+.dot.hit.first{background:var(--p-acc)}
+.conf{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:11.5px;color:var(--p-amber);padding:0 30px}
+.analyz{display:flex;flex-direction:column;align-items:center;gap:14px}
+.pring{width:74px;height:74px;border-radius:50%;position:relative;display:grid;place-items:center;
+  background:conic-gradient(var(--p-acc) calc(var(--pp,0)*1%),var(--p-sur2) 0)}
+.pring::before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--p-bg)}
+.pring b{position:relative;font-size:14px;font-variant-numeric:tabular-nums}
+.analyz .cap,.failed .cap{font-size:14px;color:var(--p-sub)}
+.failed{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:0 30px}
+.failed h4{margin:0;font-size:18px}
+.failed .btns{display:flex;gap:10px}
+.sbtn{background:var(--p-sur2);color:var(--p-text);border:0;border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;cursor:pointer}
+.sbtn.primary{background:var(--p-acc);color:#fff}
+
+.wavebox{flex:none;padding:2px 14px 6px}
+canvas.wave{width:100%;height:64px;display:block;border-radius:8px;cursor:ew-resize;touch-action:none}
+.transport{display:flex;align-items:center;justify-content:center;gap:26px;padding:4px 20px}
+.r8{background:none;border:0;color:var(--p-text);font-size:13px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+.r8 span{font-size:19px;line-height:1}
+.playbtn{width:74px;height:74px;border-radius:50%;background:var(--p-text);color:var(--p-bg);border:0;font-size:30px;cursor:pointer;display:grid;place-items:center}
+.tlabel{font-size:12.5px;color:var(--p-sub);font-variant-numeric:tabular-nums;width:76px}
+.ctlrow{padding:5px 18px}
+.ctlrow .lbl{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--p-sub);margin-bottom:4px}
+.seg{display:flex;background:var(--p-sur);border-radius:10px;padding:3px;gap:2px}
+.seg button{flex:1;border:0;background:none;color:var(--p-sub);font-size:12.5px;font-weight:600;padding:7px 0;border-radius:8px;cursor:pointer;font-variant-numeric:tabular-nums}
+.seg button.on{background:var(--p-sur2);color:var(--p-text)}
+.volrow{display:flex;align-items:center;gap:10px;padding:7px 18px 14px}
+.volrow input{flex:1;accent-color:var(--p-acc)}
+.volrow .ic{font-size:15px;color:var(--p-sub)}
+
+/* ---- fix beats sheet ---- */
+.sheet{position:absolute;left:0;right:0;bottom:-70%;height:63%;background:var(--p-sur);border-radius:18px 18px 0 0;
+  transition:bottom .32s cubic-bezier(.3,.9,.3,1);z-index:40;display:flex;flex-direction:column;box-shadow:0 -12px 40px rgba(0,0,0,.5)}
+.sheet.open{bottom:0}
+@media (prefers-reduced-motion: reduce){.sheet{transition:none}.ring,.pring{animation:none}}
+.grab{width:38px;height:5px;border-radius:3px;background:var(--p-sur2);margin:8px auto 2px;flex:none}
+.sh-head{display:flex;align-items:center;gap:10px;padding:4px 16px 8px;flex:none}
+.sh-head .bpm{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.sh-head .bpm small{color:var(--p-sub);font-weight:400}
+.sh-head .sp{flex:1}
+.txtbtn{background:none;border:0;color:var(--p-acc);font-size:13px;font-weight:600;cursor:pointer;padding:4px 6px}
+.sh-body{overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:11px}
+.fixrow{background:var(--p-bg);border-radius:12px;padding:10px 12px}
+.fixrow .lbl{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--p-sub);margin-bottom:6px;display:flex;justify-content:space-between}
+.fixrow .lbl b{color:var(--p-text);font-variant-numeric:tabular-nums}
+.fixrow .cap{font-size:11.5px;color:var(--p-sub);margin-top:6px}
+.btnpair{display:flex;gap:8px}
+.btnpair .sbtn{flex:1;font-variant-numeric:tabular-nums}
+.sbtn:disabled{opacity:.35;cursor:default}
+.switch{display:flex;align-items:center;justify-content:space-between}
+.tgl{width:50px;height:30px;border-radius:15px;background:var(--p-sur2);border:0;position:relative;cursor:pointer;flex:none;transition:background .18s}
+.tgl.on{background:#34C759}
+.tgl::after{content:"";position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;background:#fff;transition:left .18s}
+.tgl.on::after{left:22px}
+.tappad{background:var(--p-sur2);border:1.5px dashed var(--p-sub);border-radius:12px;padding:16px;width:100%;color:var(--p-text);font-size:15px;font-weight:800;letter-spacing:.06em;cursor:pointer}
+.tappad:active{background:var(--p-acc);border-color:var(--p-acc)}
+.btcap{font-size:11.5px;color:var(--p-amber)}
+
+/* ---- big count ---- */
+.bc{background:#000}
+.bc .countzone{cursor:pointer}
+.bc .bignum{font-size:260px}
+.bc .bignum.amp{font-size:160px}
+.bc-foot{flex:none;padding:0 26px 30px;display:flex;flex-direction:column;gap:12px}
+.bc .dots{justify-content:center;margin:0}
+.bc .dot{width:13px;height:13px}
+.bc .dot.first{width:16px;height:16px}
+.bc-prog{height:3px;border-radius:2px;background:var(--p-sur2);overflow:hidden}
+.bc-prog i{display:block;height:100%;width:0;background:var(--p-acc)}
+.bc-badge{position:absolute;top:60px;right:20px;font-size:12px;color:var(--p-sub);font-variant-numeric:tabular-nums;font-weight:600}
+.bc-ctl{position:absolute;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;gap:30px;z-index:30}
+.bc-ctl.show{display:flex}
+.bc-ctl .playbtn{width:110px;height:110px;font-size:44px}
+.bc-exit{position:absolute;top:56px;left:18px;background:var(--p-sur2);border:0;color:var(--p-text);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.bc-speed{display:flex;flex-direction:column;gap:8px}
+.bc-speed .sbtn{min-width:64px}
+.pulse{animation:pulse .28s ease-out}
+@keyframes pulse{0%{transform:scale(1.06)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){.pulse{animation:none}}
+
+/* ---- annotation panel ---- */
+.panel h2{font-size:21px;font-weight:800;margin:0 0 2px;letter-spacing:-.01em}
+.panel .purpose{color:var(--mut);margin:0 0 14px;max-width:58ch}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.chip{padding:6px 12px;border-radius:999px;background:var(--chip);border:1px solid transparent;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chiplbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:0 0 6px}
+.panel ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.panel li{padding-left:20px;position:relative;max-width:60ch}
+.panel li::before{content:"";position:absolute;left:2px;top:.55em;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.panel li b{font-weight:650}
+.try{margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--accent-soft);font-size:13.5px;max-width:60ch}
+.try b{color:var(--accent)}
+.apanel{display:none}
+.apanel.on{display:block}
+.voicebox{margin-top:22px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card);display:flex;gap:12px;align-items:flex-start;max-width:560px}
+.voicebox .tgl{background:var(--chip)}
+.voicebox .tgl.on{background:#34C759}
+.voicebox p{margin:2px 0 0;font-size:12.5px;color:var(--mut)}
+.voicebox b{font-size:13.5px;color:var(--ink)}
+.pillars{margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+.pillars h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:0 0 12px;font-weight:700}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.pcard{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--card)}
+.pcard b{display:block;margin-bottom:4px;font-size:14px}
+.pcard p{margin:0;font-size:13px;color:var(--mut)}
+footer{margin-top:44px;font-size:13px;color:var(--mut);max-width:70ch}
+footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--chip);padding:1px 5px;border-radius:5px}
+</style>
+
+<div class="wrap" lang="zh-Hant-TW">
+  <header>
+    <div class="eyebrow">設計原型 · MVP</div>
+    <h1>BeatCount</h1>
+    <p class="lede">匯入歌曲，App 自動偵測節拍，跟著真人語音的八拍數拍（1 2 3 4 5 6 7 8）練舞——
+      數拍大字幕隔著房間也看得清楚。這個原型是可互動的模擬：數拍會真的跑、模板可以切換、速度即時改變。</p>
+    <p class="meta"><strong>Uptown Funk (practice edit)</strong> · 115 BPM · 4:31——以下所有畫面都由這首示範曲驅動。
+       UI 語系：<strong>繁體中文（zh-TW）</strong>，目標使用者為台灣的舞者。</p>
+  </header>
+
+  <nav class="flow" aria-label="畫面流程">
+    <button class="node now" data-go="library">資料庫</button><span class="arr">點選歌曲 →</span>
+    <button class="node" data-go="player">播放器</button><span class="arr">⇄</span>
+    <button class="node" data-go="fixbeats">校正節拍</button><span class="arr">·</span>
+    <button class="node" data-go="bigcount">全螢幕數拍</button>
+    <span class="cap">2 個畫面 · 1 個面板 · 1 個覆疊層——這就是整個 App</span>
+  </nav>
+
+  <div class="main">
+    <!-- =============== PHONE =============== -->
+    <div class="stage">
+      <div>
+        <div class="tabs" role="tablist" aria-label="畫面">
+          <button class="tab on" data-go="library">資料庫</button>
+          <button class="tab" data-go="player">播放器</button>
+          <button class="tab" data-go="fixbeats">校正節拍</button>
+          <button class="tab" data-go="bigcount">全螢幕數拍</button>
+        </div>
+        <div class="phone-outer"><div class="phone" lang="zh-Hant-TW">
+          <div class="island"></div>
+
+          <!-- Library -->
+          <div class="screen on" id="scr-library">
+            <div class="statusbar"></div>
+            <div class="lib-nav"><h2>BeatCount</h2>
+              <button class="addbtn" id="btn-add" aria-label="匯入音樂或影片">+</button></div>
+            <div class="rows" id="lib-rows">
+              <div class="row" id="row-main">
+                <div class="thumb"><canvas id="thumbwave" width="104" height="68" style="width:52px;height:34px"></canvas></div>
+                <div><div class="t1">Uptown Funk (practice edit)</div>
+                     <div class="t2" id="row-main-sub">115 BPM · 4:31</div></div>
+              </div>
+              <div class="row">
+                <div class="thumb"></div>
+                <div><div class="t1">Levitating</div>
+                     <div class="t2">正在偵測節拍… 40%</div></div>
+                <div class="ring"></div>
+              </div>
+              <div class="row">
+                <div class="thumb"></div>
+                <div><div class="t1">GoldenHour.mp4</div>
+                     <div class="t2">正在擷取音訊…</div></div>
+                <div class="ring"></div>
+              </div>
+            </div>
+            <div class="lib-empty" id="lib-empty" style="display:none">
+              <div class="note-ico">♫</div>
+              <h3>還沒有歌曲</h3>
+              <p>匯入歌曲或影片，BeatCount 會自動偵測節拍、開口幫你數拍。</p>
+              <button class="cta" id="btn-empty-import">匯入音樂或影片</button>
+              <p class="foot">BeatCount 無法從 YouTube 或串流服務下載音樂。
+                 請先把音訊或影片檔儲存到裝置，再從這裡匯入。</p>
+            </div>
+          </div>
+
+          <!-- Player -->
+          <div class="screen" id="scr-player">
+            <div class="statusbar"></div>
+            <div class="topbar">
+              <button class="back" data-go="library">‹ 資料庫</button>
+              <span class="title">Uptown Funk (practice edit)</span>
+              <button class="act" id="btn-fix">校正節拍</button>
+              <button class="act" data-go="bigcount" aria-label="全螢幕數拍">⤢</button>
+            </div>
+            <div class="countzone" id="pz">
+              <div id="p-ready">
+                <div style="display:flex;flex-direction:column;align-items:center">
+                  <div class="bignum dim one" id="num">1</div>
+                  <div class="dots" id="dots"></div>
+                </div>
+              </div>
+              <div id="p-analyzing" class="analyz" style="display:none">
+                <div class="pring" id="pring"><b id="ppct">0%</b></div>
+                <div class="cap">正在偵測節拍…</div>
+                <div class="cap" style="font-size:12px;opacity:.7">分析完成後就會開始數拍。</div>
+              </div>
+              <div id="p-failed" class="failed" style="display:none">
+                <h4>找不到節拍</h4>
+                <div class="cap">語音、環境音或音量很低的音軌可能會發生這種情況。</div>
+                <div class="btns">
+                  <button class="sbtn" id="btn-retry">再試一次</button>
+                  <button class="sbtn primary" id="btn-manual">自己點拍</button>
+                </div>
+              </div>
+              <div class="conf" id="conf" style="display:none">偵測結果不太確定——請仔細聽，覺得不準就點「校正節拍」。</div>
+            </div>
+            <div class="wavebox"><canvas class="wave" id="wave"></canvas></div>
+            <div class="transport">
+              <span class="tlabel" id="t-el">0:00</span>
+              <button class="r8" id="btn-r8" title="Back to the start of this 8-count"><span>↺</span>8</button>
+              <button class="playbtn" id="btn-play" aria-label="Play">▶</button>
+              <span class="tlabel" style="text-align:right" id="t-tot">4:31</span>
+            </div>
+            <div class="ctlrow"><div class="lbl">速度</div>
+              <div class="seg" id="seg-speed">
+                <button data-r="0.5">0.5×</button><button data-r="0.75">0.75×</button>
+                <button data-r="0.9">0.9×</button><button data-r="1" class="on">1×</button>
+                <button data-r="1.25">1.25×</button>
+              </div></div>
+            <div class="ctlrow"><div class="lbl">數拍</div>
+              <div class="seg" id="seg-tpl">
+                <button data-t="eight" class="on">1 – 8</button>
+                <button data-t="eightAnd">1 &amp; 2 &amp;</button>
+              </div></div>
+            <div class="volrow"><span class="ic">🔊</span>
+              <input type="range" id="vvol" min="0" max="100" value="85" aria-label="數拍人聲音量">
+            </div>
+
+            <!-- Fix Beats sheet -->
+            <div class="sheet" id="sheet">
+              <div class="grab"></div>
+              <div class="sh-head">
+                <span class="bpm" id="sh-bpm">偵測結果：115.0 BPM</span>
+                <span class="sp"></span>
+                <button class="txtbtn" id="btn-undo">復原</button>
+                <button class="txtbtn" id="btn-reset">重置</button>
+                <button class="txtbtn" id="btn-done"><b>完成</b></button>
+              </div>
+              <div class="sh-body" id="sh-normal">
+                <div class="fixrow switch"><div>
+                    <div class="lbl" style="margin-bottom:2px">數拍人聲</div>
+                    <div class="cap" style="margin-top:0">快速開關人聲，與原曲 A/B 對照。</div></div>
+                  <button class="tgl on" id="tgl-counts" role="switch" aria-checked="true" aria-label="數拍人聲開關"></button>
+                </div>
+                <div class="fixrow"><div class="lbl">拍速</div>
+                  <div class="btnpair">
+                    <button class="sbtn" id="btn-half">½× → 57.5</button>
+                    <button class="sbtn" id="btn-dbl">2× → 230</button>
+                  </div>
+                  <div class="cap">覺得數拍快了一倍？按 ½×。慢了一半？按 2×。</div>
+                </div>
+                <div class="fixrow"><div class="lbl"><span>整體微調</span><b id="lbl-shift">0 ms</b></div>
+                  <div class="btnpair">
+                    <button class="sbtn" id="btn-m10">−10 ms</button>
+                    <button class="sbtn" id="btn-p10">+10 ms</button>
+                  </div>
+                  <div class="cap">數拍偏早或偏晚？微調到人聲剛好落在拍點上。</div>
+                </div>
+                <div class="fixrow"><div class="lbl">「1」的位置</div>
+                  <div class="btnpair">
+                    <button class="sbtn" id="btn-s1l">「1」往前 ◀</button>
+                    <button class="sbtn" id="btn-s1r">「1」往後 ▶</button>
+                  </div>
+                  <div style="margin-top:8px">
+                    <button class="tappad" id="tap1">點「1」</button>
+                    <div class="cap">聽到「1」就點一下。</div>
+                  </div>
+                </div>
+                <div class="btcap" id="btcap">無線耳機會有延遲——要精準校正時，請改用喇叭或有線耳機。</div>
+              </div>
+              <div class="sh-body" id="sh-manual" style="display:none">
+                <div class="fixrow" id="man-step1">
+                  <div class="lbl">步驟 1 · 點出拍速</div>
+                  <button class="tappad" id="tap-tempo" style="padding:26px 16px">跟著節拍點</button>
+                  <div class="cap" id="man-cap">跟著節拍持續點擊，直到數字穩定下來。</div>
+                </div>
+                <div class="fixrow" id="man-step2" style="display:none">
+                  <div class="lbl">步驟 2 · 點出「1」</div>
+                  <button class="tappad" id="tap-one" style="padding:26px 16px">在「1」的時候點一下</button>
+                  <div class="cap">在任何一個「1」上點一下——最近的拍點會變成「1」。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Big Count -->
+          <div class="screen bc" id="scr-bigcount">
+            <div class="statusbar"></div>
+            <div class="bc-badge" id="bc-badge">1×</div>
+            <div class="countzone" id="bc-zone">
+              <div class="bignum one" id="bc-num">1</div>
+            </div>
+            <div class="bc-foot">
+              <div class="dots" id="bc-dots"></div>
+              <div class="bc-prog"><i id="bc-prog"></i></div>
+            </div>
+            <div class="bc-ctl" id="bc-ctl">
+              <button class="bc-exit" data-go="player">離開</button>
+              <button class="r8" id="bc-r8" style="color:#fff"><span>↺</span>8</button>
+              <button class="playbtn" id="bc-play" aria-label="Play or pause">▶</button>
+              <div class="bc-speed">
+                <button class="sbtn" data-r="0.75">0.75×</button>
+                <button class="sbtn" data-r="1">1×</button>
+              </div>
+            </div>
+          </div>
+
+        </div></div>
+      </div>
+    </div>
+
+    <!-- =============== ANNOTATIONS =============== -->
+    <div class="panel">
+
+      <section class="apanel on" id="pan-library">
+        <h2>資料庫</h2>
+        <p class="purpose">只是個入口，不是目的地。專案會保存下來——每首歌只分析一次，
+          之後每次都是「開 App → 播放」。</p>
+        <p class="chiplbl">狀態</p>
+        <div class="chips">
+          <button class="chip on" data-lib="default">預設</button>
+          <button class="chip" data-lib="empty">空白（首次啟動）</button>
+        </div>
+        <ul>
+          <li><b>歌曲列</b>顯示歌名、BPM · 長度；速度 ≠ 1× 時也會顯示——到播放器改個速度再回來看看。</li>
+          <li><b>第二列</b>正在分析（「正在偵測節拍… 40%」）——實機上點擊會直接進入分析中的播放器。</li>
+          <li><b>第三列</b>是影片匯入：先擷取音軌，之後流程與音訊完全相同。（直接下載 YouTube 永遠不做——請先把檔案存到裝置再匯入。）</li>
+          <li><b>+</b> 開啟系統檔案選擇器（音訊：MP3/M4A/WAV · 影片：MP4/MOV）。不用命名、沒有進度視窗——直接進播放器。</li>
+          <li>左滑刪除（有確認）；長按選單：重新命名 / 重新分析 / 刪除。重複匯入以雜湊值偵測（「已在資料庫中」）。</li>
+        </ul>
+        <div class="try"><b>試試看：</b>點第一列開啟播放器。點 <b>+</b> 模擬一次全新匯入（選檔 → 分析 → 就緒）。</div>
+      </section>
+
+      <section class="apanel" id="pan-player">
+        <h2>播放器</h2>
+        <p class="purpose">App 的本體。大字數拍、八拍圓點、節拍波形、播放控制、速度、模板——
+          所有設定自動儲存，整個 App 沒有任何「儲存」按鈕。</p>
+        <p class="chiplbl">狀態</p>
+        <div class="chips">
+          <button class="chip on" data-pm="ready">就緒</button>
+          <button class="chip" data-pm="analyzing">分析中</button>
+          <button class="chip" data-pm="lowconf">信心不足</button>
+          <button class="chip" data-pm="failed">偵測失敗</button>
+        </div>
+        <ul>
+          <li><b>數拍顯示</b>——數字約佔螢幕高度 40%；「1」以強調色標示；切到 <b>1 &amp; 2 &amp;</b> 模板時，數字之間會閃出半尺寸的「&amp;」。播放時螢幕不會休眠。</li>
+          <li><b>波形</b>——強調色刻度標出每個「1」（重拍）。拖曳會吸附到最近的「1」，每次重播都從整句開始。</li>
+          <li><b>↺ 8</b>——跳回目前八拍的開頭：專門反覆練這一句用的按鈕。</li>
+          <li><b>速度</b>——變速不變調；人聲不做時間伸縮、只重新排程，所以 0.5× 時數拍依然乾淨、緊貼拍點。</li>
+          <li><b>模板切換</b>在下一個「1」才生效，數拍不會在句子中間打結。</li>
+          <li>播放 4 秒未觸碰後控制項變暗；數字與圓點永不變暗。</li>
+        </ul>
+        <div class="try"><b>試試看：</b>按<b>播放</b>，切到 <b>1 &amp; 2 &amp;</b>，再點 <b>0.5×</b>——
+          數拍變慢但永遠不會脫拍。拖曳波形，看它吸附到「1」。</div>
+      </section>
+
+      <section class="apanel" id="pan-fixbeats">
+        <h2>校正節拍 <span style="font-weight:400;color:var(--mut)">· 播放器上的面板</span></h2>
+        <p class="purpose">偵測有時會出錯——拍速快慢一倍、整體偏移、或「1」數錯位置。
+          每種錯誤都有專屬的一鍵修正，音樂不停、即時生效。
+          驗證<em>就是</em>播放本身：人聲對上原曲，是最靈敏的偵錯工具。</p>
+        <p class="chiplbl">模式</p>
+        <div class="chips">
+          <button class="chip on" data-fm="normal">校正</button>
+          <button class="chip" data-fm="manual">手動備援（偵測失敗時）</button>
+        </div>
+        <ul>
+          <li><b>數拍人聲 A/B</b>——瞬間開關人聲，用原曲對照你的修正。</li>
+          <li><b>½× / 2×</b>（拍速）——修八度錯誤；按鈕先顯示結果 BPM，超出 40–220 會停用。</li>
+          <li><b>−10 / +10 ms</b>（整體微調）——相位微調，即時顯示累計值；長按連續調整。</li>
+          <li><b>「1」往前 / 往後</b>——逐拍旋轉「1」的位置，結果確定、不受觸控延遲影響。<b>點「1」</b>把最近的拍點設為「1」（有節奏地連點 3 下以上還會重新校正相位，並補償延遲）。</li>
+          <li><b>復原</b>回到上一步；<b>重置</b>還原偵測結果。「完成」只是關閉面板——修正早已即時生效並儲存。</li>
+          <li>藍牙輸出會顯示延遲警告；手動備援是兩步驟：先跟著節拍點出拍速，再點出「1」。</li>
+        </ul>
+        <div class="try"><b>試試看：</b>播放中點 <b>2×</b>，看數拍變成兩倍快——再按<b>復原</b>。
+          點 <b>「1」往後 ▶</b>，看強調色的「1」在句中移動。</div>
+      </section>
+
+      <section class="apanel" id="pan-bigcount">
+        <h2>全螢幕數拍 <span style="font-weight:400;color:var(--mut)">· 覆疊層</span></h2>
+        <p class="purpose">手機立在房間對面練舞用：數字約佔螢幕短邊 70%、最高對比，直向橫向都支援。
+          它只是播放器狀態的一層外皮——不是另一個畫面。</p>
+        <ul>
+          <li>每一拍數字輕微脈動；每個「1」有強調色閃光；「&amp;」以半尺寸顯示。</li>
+          <li>八拍圓點粗到 4 公尺外也看得清楚；底部有極細進度條；角落顯示目前速度。</li>
+          <li><b>單點</b>叫出放大控制（暫停、↺ 8、速度、離開），4 秒後自動隱藏；雙指連點兩下隨時退出。</li>
+          <li>此模式下即使暫停也保持螢幕常亮。</li>
+        </ul>
+        <div class="try"><b>試試看：</b>點任意處叫出控制；按大暫停鍵；<b>離開</b>會帶著原本的狀態回到播放器。</div>
+      </section>
+
+      <div class="voicebox">
+        <button class="tgl" id="tgl-voice" role="switch" aria-checked="false" aria-label="示範語音"></button>
+        <div><b>示範語音</b>
+          <p>用瀏覽器的 TTS 唸出數拍，先聽個概念。它是機器音、時間也會抖——
+             正式 App 使用<em>真人錄音</em>，由音訊引擎精準鎖在拍點上。
+             待決定：人聲用英文數（five、six、seven、eight——台灣舞蹈教室常見）
+             還是中文數（一、二、三…）；此示範用英文。</p>
+        </div>
+      </div>
+
+      <div class="pillars">
+        <h3>MVP 四大支柱——程式碼必須做對的事</h3>
+        <div class="pgrid">
+          <div class="pcard"><b>同步就是產品</b><p>任何速度下，人聲落點與拍點誤差 ≤ 30 ms，整首歌零漂移。聲音與畫面共用同一個音訊時鐘。</p></div>
+          <div class="pcard"><b>偵測本來就會錯</b><p>每種錯誤（八度、相位、重拍）都有明確的一鍵修正，播放中即時生效，隨專案保存。</p></div>
+          <div class="pcard"><b>只分析一次</b><p>分析結果快取在本機——重開任何歌曲都是秒開。冷啟動直接回到上次的專案：開 App → 播放，兩下搞定。</p></div>
+          <div class="pcard"><b>音訊＋影片皆可匯入</b><p>MP3/M4A/WAV 匯入、MP4/MOV 擷取音軌。混音輸出成檔案是 MVP 之後的事，引擎設計讓它只差約 100 行。</p></div>
+        </div>
+      </div>
+
+      <footer>
+        完整文件在 repo：<code>docs/SPEC.md</code>（產品規格——畫面、狀態、文案、邊界情況）、
+        <code>docs/ARCHITECTURE.md</code>（節拍偵測、AVAudioEngine 管線、儲存、測試）。
+        本頁即 <code>design/mockup.html</code>。
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- model ---------- */
+var SONG={bpm:115,dur:271};
+var S={screen:'library',playing:false,t:0,rate:1,tpl:'eight',
+       bpmMult:1,phaseMs:0,anchor:0,countsOn:true,voice:false,voiceVol:.85,
+       pm:'ready',fm:'normal',sheet:false,prev:null,speedTouched:false};
+var lastToken=null,raf=null,lastTs=null,anaTimer=null,bcHide=null;
+
+function bpm(){return SONG.bpm*S.bpmMult}
+function bd(){return 60/bpm()}
+function phase(){return S.phaseMs/1000}
+function idxAt(t){return Math.floor((t-phase())/bd())}
+function beatTime(i){return i*bd()+phase()}
+function countOf(i){return ((i-S.anchor)%8+8)%8+1}
+function tokenAt(t){
+  var x=(t-phase())/bd(), i=Math.floor(x), frac=x-i;
+  if(S.tpl==='eightAnd'&&frac>=.5) return {amp:true,n:countOf(i),key:'a'+i};
+  return {amp:false,n:countOf(i),key:'n'+i};
+}
+function nearestOne(t){
+  var i=idxAt(t), off=((i-S.anchor)%8+8)%8;
+  var down=i-off, cand=[down,down+8], best=cand[0];
+  if(Math.abs(beatTime(cand[1])-t)<Math.abs(beatTime(cand[0])-t)) best=cand[1];
+  return Math.max(0,beatTime(best));
+}
+function phraseStart(t){
+  var i=idxAt(t), off=((i-S.anchor)%8+8)%8;
+  return Math.max(0,beatTime(i-off));
+}
+function fmt(s){s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2)}
+
+/* ---------- els ---------- */
+function $(id){return document.getElementById(id)}
+var num=$('num'),bcNum=$('bc-num'),dotsEl=$('dots'),bcDots=$('bc-dots');
+
+/* dots */
+[dotsEl,bcDots].forEach(function(host){
+  for(var i=1;i<=8;i++){var d=document.createElement('div');d.className='dot'+(i===1?' first':'');host.appendChild(d)}
+});
+function setDots(host,n){
+  var kids=host.children;
+  for(var i=0;i<8;i++) kids[i].classList.toggle('hit',(i+1)===n);
+}
+
+/* ---------- navigation ---------- */
+function go(scr){
+  if(scr==='fixbeats'){go('player');openSheet(true);return}
+  S.screen=scr;
+  ['library','player','bigcount'].forEach(function(s){
+    $('scr-'+s).classList.toggle('on',s===scr);
+  });
+  document.querySelectorAll('[data-go]').forEach(function(b){
+    var t=b.getAttribute('data-go');
+    if(b.classList.contains('tab')||b.classList.contains('node'))
+      b.classList.toggle(b.classList.contains('tab')?'on':'now', t===scr||(t==='fixbeats'&&scr==='player'&&S.sheet));
+  });
+  ['library','player','fixbeats','bigcount'].forEach(function(p){
+    $('pan-'+p).classList.toggle('on', p===scr||(p==='fixbeats'&&scr==='player'&&S.sheet));
+  });
+  if(scr==='library') renderLib();
+  drawWave();
+}
+document.querySelectorAll('[data-go]').forEach(function(b){
+  b.addEventListener('click',function(){go(b.getAttribute('data-go'))});
+});
+function openSheet(open){
+  S.sheet=open; $('sheet').classList.toggle('open',open);
+  $('pan-player').classList.toggle('on',!open&&S.screen==='player');
+  $('pan-fixbeats').classList.toggle('on',open);
+  document.querySelectorAll('.tab').forEach(function(b){
+    var t=b.getAttribute('data-go');
+    b.classList.toggle('on',(t==='fixbeats'&&open)||(t===S.screen&&!open));
+  });
+  if(open&&!S.playing&&S.pm==='ready') setPlay(true); /* sheet auto-plays for verification */
+}
+$('btn-fix').addEventListener('click',function(){openSheet(true)});
+$('btn-done').addEventListener('click',function(){openSheet(false)});
+
+/* ---------- library ---------- */
+function renderLib(){
+  var sub='115 BPM · 4:31'+(S.speedTouched&&S.rate!==1?' · '+S.rate+'×':'');
+  $('row-main-sub').textContent=sub;
+}
+document.querySelectorAll('.chip[data-lib]').forEach(function(c){
+  c.addEventListener('click',function(){
+    document.querySelectorAll('.chip[data-lib]').forEach(function(x){x.classList.remove('on')});
+    c.classList.add('on');
+    var empty=c.getAttribute('data-lib')==='empty';
+    $('lib-rows').style.display=empty?'none':'flex';
+    $('lib-empty').style.display=empty?'flex':'none';
+  });
+});
+$('row-main').addEventListener('click',function(){go('player')});
+function fakeImport(){go('player');setPM('analyzing')}
+$('btn-add').addEventListener('click',fakeImport);
+$('btn-empty-import').addEventListener('click',fakeImport);
+
+/* ---------- player modes ---------- */
+function setPM(pm){
+  S.pm=pm;
+  clearTimeout(anaTimer);
+  $('p-ready').style.display=(pm==='ready'||pm==='lowconf')?'block':'none';
+  $('p-analyzing').style.display=pm==='analyzing'?'flex':'none';
+  $('p-failed').style.display=pm==='failed'?'flex':'none';
+  $('conf').style.display=pm==='lowconf'?'block':'none';
+  document.querySelectorAll('.chip[data-pm]').forEach(function(c){
+    c.classList.toggle('on',c.getAttribute('data-pm')===pm);
+  });
+  if(pm==='analyzing'){
+    setPlay(false);
+    var p=0,ring=$('pring');
+    anaTimer=setInterval(function(){
+      p+=2+Math.random()*3; if(p>=100){p=100;clearInterval(anaTimer);setTimeout(function(){setPM('ready')},350)}
+      ring.style.setProperty('--pp',p); $('ppct').textContent=Math.floor(p)+'%';
+    },110);
+  }
+  if(pm==='failed') setPlay(false);
+}
+document.querySelectorAll('.chip[data-pm]').forEach(function(c){
+  c.addEventListener('click',function(){go('player');setPM(c.getAttribute('data-pm'))});
+});
+$('btn-retry').addEventListener('click',function(){setPM('analyzing')});
+$('btn-manual').addEventListener('click',function(){setPM('ready');setFM('manual');openSheet(true)});
+
+/* ---------- transport ---------- */
+function setPlay(on){
+  if(on&&(S.pm==='analyzing'||S.pm==='failed')) return;
+  S.playing=on;
+  $('btn-play').textContent=on?'❚❚':'▶';
+  $('bc-play').textContent=on?'❚❚':'▶';
+  $('btn-play').setAttribute('aria-label',on?'暫停':'播放');
+  if(on){num.classList.remove('dim');lastTs=null;if(!raf)raf=requestAnimationFrame(tick)}
+}
+$('btn-play').addEventListener('click',function(){setPlay(!S.playing)});
+$('bc-play').addEventListener('click',function(e){e.stopPropagation();setPlay(!S.playing);showBC(true)});
+$('btn-r8').addEventListener('click',function(){S.t=phraseStart(S.t);lastToken=null;render()});
+$('bc-r8').addEventListener('click',function(e){e.stopPropagation();S.t=phraseStart(S.t);lastToken=null;render()});
+
+/* speed */
+function setRate(r,fromBC){
+  S.rate=r;S.speedTouched=true;
+  document.querySelectorAll('#seg-speed button').forEach(function(b){
+    b.classList.toggle('on',parseFloat(b.getAttribute('data-r'))===r);
+  });
+  $('bc-badge').textContent=r+'×';
+  renderLib();
+}
+document.querySelectorAll('#seg-speed button').forEach(function(b){
+  b.addEventListener('click',function(){setRate(parseFloat(b.getAttribute('data-r')))});
+});
+document.querySelectorAll('#bc-ctl [data-r]').forEach(function(b){
+  b.addEventListener('click',function(e){e.stopPropagation();setRate(parseFloat(b.getAttribute('data-r')));showBC(true)});
+});
+/* template */
+document.querySelectorAll('#seg-tpl button').forEach(function(b){
+  b.addEventListener('click',function(){
+    S.tpl=b.getAttribute('data-t');
+    document.querySelectorAll('#seg-tpl button').forEach(function(x){x.classList.toggle('on',x===b)});
+  });
+});
+$('vvol').addEventListener('input',function(){S.voiceVol=this.value/100});
+
+/* ---------- fix beats ---------- */
+function snap(){return{bpmMult:S.bpmMult,phaseMs:S.phaseMs,anchor:S.anchor}}
+function pushUndo(){S.prev=snap()}
+function refreshFix(){
+  var eff=bpm(), det=SONG.bpm;
+  var txt=(S.bpmMult===1&&S.phaseMs===0)?('偵測結果：'+det.toFixed(1)+' BPM')
+        :(det.toFixed(1)+' → '+eff.toFixed(1)+' BPM'+(S.phaseMs?' · '+(S.phaseMs>0?'+':'')+S.phaseMs+' ms':''));
+  $('sh-bpm').textContent=txt;
+  var h=eff/2,d=eff*2;
+  $('btn-half').textContent='½× → '+(h<40?'—':h.toFixed(1).replace(/\.0$/,''));
+  $('btn-dbl').textContent='2× → '+(d>220?'—':d.toFixed(1).replace(/\.0$/,''));
+  $('btn-half').disabled=h<40; $('btn-dbl').disabled=d>220;
+  $('lbl-shift').textContent=(S.phaseMs>0?'+':'')+S.phaseMs+' ms';
+}
+$('btn-half').addEventListener('click',function(){pushUndo();S.bpmMult/=2;lastToken=null;refreshFix()});
+$('btn-dbl').addEventListener('click',function(){pushUndo();S.bpmMult*=2;lastToken=null;refreshFix()});
+function holdable(id,fn){
+  var el=$(id),iv=null;
+  el.addEventListener('pointerdown',function(){pushUndo();fn();iv=setInterval(fn,140)});
+  ['pointerup','pointerleave','pointercancel'].forEach(function(ev){
+    el.addEventListener(ev,function(){clearInterval(iv);iv=null});
+  });
+}
+holdable('btn-m10',function(){S.phaseMs-=10;refreshFix()});
+holdable('btn-p10',function(){S.phaseMs+=10;refreshFix()});
+$('btn-s1l').addEventListener('click',function(){pushUndo();S.anchor=((S.anchor-1)%8+8)%8;drawWave();refreshFix()});
+$('btn-s1r').addEventListener('click',function(){pushUndo();S.anchor=((S.anchor+1)%8+8)%8;drawWave();refreshFix()});
+$('tap1').addEventListener('click',function(){
+  pushUndo();
+  var i=idxAt(S.t); S.anchor=((i%8)+8)%8; drawWave(); refreshFix();
+});
+$('btn-undo').addEventListener('click',function(){
+  if(!S.prev)return; S.bpmMult=S.prev.bpmMult;S.phaseMs=S.prev.phaseMs;S.anchor=S.prev.anchor;
+  S.prev=null;lastToken=null;drawWave();refreshFix();
+});
+$('btn-reset').addEventListener('click',function(){
+  pushUndo();S.bpmMult=1;S.phaseMs=0;S.anchor=0;lastToken=null;drawWave();refreshFix();
+});
+$('tgl-counts').addEventListener('click',function(){
+  S.countsOn=!S.countsOn;this.classList.toggle('on',S.countsOn);
+  this.setAttribute('aria-checked',String(S.countsOn));
+});
+/* manual mode */
+var taps=[];
+function setFM(fm){
+  S.fm=fm;
+  $('sh-normal').style.display=fm==='normal'?'flex':'none';
+  $('sh-manual').style.display=fm==='manual'?'flex':'none';
+  document.querySelectorAll('.chip[data-fm]').forEach(function(c){
+    c.classList.toggle('on',c.getAttribute('data-fm')===fm);
+  });
+  if(fm==='manual'){taps=[];$('man-step1').style.display='block';$('man-step2').style.display='none';
+    $('man-cap').textContent='跟著節拍持續點擊，直到數字穩定下來。'}
+}
+document.querySelectorAll('.chip[data-fm]').forEach(function(c){
+  c.addEventListener('click',function(){go('player');openSheet(true);setFM(c.getAttribute('data-fm'))});
+});
+$('tap-tempo').addEventListener('click',function(){
+  taps.push(performance.now());
+  if(taps.length>=2){
+    var ivs=[],i;for(i=1;i<taps.length;i++)ivs.push(taps[i]-taps[i-1]);
+    var mean=ivs.reduce(function(a,b){return a+b},0)/ivs.length;
+    var est=Math.min(220,Math.max(40,60000/mean));
+    $('man-cap').textContent='≈ '+est.toFixed(1)+' BPM · 繼續點… '+Math.min(taps.length,8)+'/8';
+    if(taps.length>=8){$('man-step1').style.display='none';$('man-step2').style.display='block'}
+  } else $('man-cap').textContent='繼續點… 1/8';
+});
+$('tap-one').addEventListener('click',function(){
+  var i=idxAt(S.t);S.anchor=((i%8)+8)%8;setFM('normal');drawWave();refreshFix();
+});
+
+/* ---------- big count ---------- */
+function showBC(on){
+  $('bc-ctl').classList.toggle('show',on);
+  clearTimeout(bcHide);
+  if(on) bcHide=setTimeout(function(){$('bc-ctl').classList.remove('show')},4000);
+}
+$('bc-zone').addEventListener('click',function(){showBC(!$('bc-ctl').classList.contains('show'))});
+$('scr-bigcount').addEventListener('dblclick',function(){go('player')});
+
+/* ---------- waveform ---------- */
+var env=[],i;
+(function(){var v=.35,j;for(j=0;j<400;j++){v+=(Math.random()-.48)*.16;v=Math.max(.08,Math.min(1,v));
+  env.push(v*(.6+.4*Math.abs(Math.sin(j/22))))}})();
+function drawOn(cv,detail){
+  var dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;
+  if(!W)return;
+  cv.width=W*dpr;cv.height=H*dpr;
+  var g=cv.getContext('2d');g.scale(dpr,dpr);g.clearRect(0,0,W,H);
+  g.fillStyle='rgba(255,255,255,.28)';
+  var n=env.length,bw=W/n,mid=H/2,k;
+  for(k=0;k<n;k++){var h=env[k]*H*.86;g.fillRect(k*bw,mid-h/2,Math.max(1,bw*.65),h)}
+  if(!detail)return;
+  var nb=Math.floor((SONG.dur-phase())/bd());
+  for(k=0;k<=nb;k++){
+    var x=beatTime(k)/SONG.dur*W, one=countOf(k)===1;
+    if(!one&&nb>W/3&&k%2)continue;
+    g.fillStyle=one?'#FF4562':'rgba(255,255,255,.22)';
+    g.fillRect(x,one?2:H*.28,one?2:1,one?H-4:H*.44);
+  }
+  g.fillStyle='#fff';g.fillRect(S.t/SONG.dur*W-1,0,2,H);
+}
+function drawWave(){drawOn($('wave'),true);drawOn($('thumbwave'),false)}
+var wave=$('wave'),scrub=false;
+function seekFromX(e){
+  var r=wave.getBoundingClientRect(),f=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+  S.t=nearestOne(f*SONG.dur);lastToken=null;render();
+}
+wave.addEventListener('pointerdown',function(e){scrub=true;wave.setPointerCapture(e.pointerId);seekFromX(e)});
+wave.addEventListener('pointermove',function(e){if(scrub)seekFromX(e)});
+['pointerup','pointercancel'].forEach(function(ev){wave.addEventListener(ev,function(){scrub=false})});
+window.addEventListener('resize',drawWave);
+
+/* ---------- demo voice ---------- */
+$('tgl-voice').addEventListener('click',function(){
+  S.voice=!S.voice;this.classList.toggle('on',S.voice);
+  this.setAttribute('aria-checked',String(S.voice));
+  if(!S.voice&&window.speechSynthesis)speechSynthesis.cancel();
+});
+function speak(tok){
+  if(!S.voice||!S.countsOn||!window.speechSynthesis)return;
+  try{
+    speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(tok.amp?'and':String(tok.n));
+    u.rate=2.4;u.volume=S.voiceVol;u.lang='en-US';
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------- render loop ---------- */
+function applyNum(el,tok,ready){
+  el.textContent=tok.amp?'&':String(tok.n);
+  el.classList.toggle('amp',tok.amp);
+  el.classList.toggle('one',!tok.amp&&tok.n===1);
+  el.classList.toggle('dim',!ready);
+}
+function render(){
+  var ready=(S.pm==='ready'||S.pm==='lowconf');
+  var tok=tokenAt(S.t);
+  applyNum(num,tok,ready&&(S.playing||S.t>0));
+  applyNum(bcNum,tok,true);
+  setDots(dotsEl,tok.n);setDots(bcDots,tok.n);
+  $('t-el').textContent=fmt(S.t);$('t-tot').textContent=fmt(SONG.dur);
+  $('bc-prog').style.width=(S.t/SONG.dur*100)+'%';
+  drawWave();
+  if(lastToken!==tok.key){
+    if(S.playing){
+      speak(tok);
+      if(!tok.amp&&tok.n===1){[num,bcNum].forEach(function(el){el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse')})}
+    }
+    lastToken=tok.key;
+  }
+}
+function tick(ts){
+  raf=requestAnimationFrame(tick);
+  if(lastTs==null){lastTs=ts;return}
+  var dt=(ts-lastTs)/1000;lastTs=ts;
+  if(S.playing){
+    S.t+=dt*S.rate;
+    if(S.t>=SONG.dur){S.t=0;setPlay(false);bcNum.textContent='—'}
+    render();
+  }
+}
+raf=requestAnimationFrame(tick);
+
+/* init */
+refreshFix();render();setDots(dotsEl,1);setDots(bcDots,1);
+setTimeout(drawWave,50);
+})();
+</script>
+
+</body>
+</html>
