@@ -32,7 +32,7 @@
 *{box-sizing:border-box}
 body{
   margin:0; background:var(--paper); color:var(--ink);
-  font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
+  font:15px/1.7 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC",system-ui,"Segoe UI",Roboto,sans-serif;
   -webkit-font-smoothing:antialiased;
 }
 .wrap{max-width:1180px;margin:0 auto;padding:40px 24px 80px}
@@ -236,34 +236,33 @@ footer{margin-top:44px;font-size:13px;color:var(--mut);max-width:70ch}
 footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--chip);padding:1px 5px;border-radius:5px}
 </style>
 
-<div class="wrap">
+<div class="wrap" lang="zh-Hant-TW">
   <header>
-    <div class="eyebrow">Design mockup · MVP</div>
+    <div class="eyebrow">設計原型 · MVP</div>
     <h1>BeatCount</h1>
-    <p class="lede">Import a song, let the app find the beats, and practice to a human voice counting
-      dance 8-counts — with a count display readable from across the room. This mockup is a working
-      simulation: the count runs, the templates switch, the speed chips change the rate.</p>
-    <p class="meta"><strong>Uptown Funk (practice edit)</strong> · 115 BPM · 4:31 — the demo track driving every screen below.
-       UI locale: <strong>Traditional Chinese (zh-TW)</strong> — target users are dancers in Taiwan; annotations on this page stay in English.</p>
+    <p class="lede">匯入歌曲，App 自動偵測節拍，跟著真人語音的八拍數拍（1 2 3 4 5 6 7 8）練舞——
+      數拍大字幕隔著房間也看得清楚。這個原型是可互動的模擬：數拍會真的跑、模板可以切換、速度即時改變。</p>
+    <p class="meta"><strong>Uptown Funk (practice edit)</strong> · 115 BPM · 4:31——以下所有畫面都由這首示範曲驅動。
+       UI 語系：<strong>繁體中文（zh-TW）</strong>，目標使用者為台灣的舞者。</p>
   </header>
 
-  <nav class="flow" aria-label="Screen flow">
-    <button class="node now" data-go="library">Library</button><span class="arr">tap a song →</span>
-    <button class="node" data-go="player">Player</button><span class="arr">⇄</span>
-    <button class="node" data-go="fixbeats">Fix Beats sheet</button><span class="arr">·</span>
-    <button class="node" data-go="bigcount">Big Count</button>
-    <span class="cap">2 screens · 1 sheet · 1 overlay — that’s the whole app</span>
+  <nav class="flow" aria-label="畫面流程">
+    <button class="node now" data-go="library">資料庫</button><span class="arr">點選歌曲 →</span>
+    <button class="node" data-go="player">播放器</button><span class="arr">⇄</span>
+    <button class="node" data-go="fixbeats">校正節拍</button><span class="arr">·</span>
+    <button class="node" data-go="bigcount">全螢幕數拍</button>
+    <span class="cap">2 個畫面 · 1 個面板 · 1 個覆疊層——這就是整個 App</span>
   </nav>
 
   <div class="main">
     <!-- =============== PHONE =============== -->
     <div class="stage">
       <div>
-        <div class="tabs" role="tablist" aria-label="Screens">
-          <button class="tab on" data-go="library">Library</button>
-          <button class="tab" data-go="player">Player</button>
-          <button class="tab" data-go="fixbeats">Fix Beats</button>
-          <button class="tab" data-go="bigcount">Big Count</button>
+        <div class="tabs" role="tablist" aria-label="畫面">
+          <button class="tab on" data-go="library">資料庫</button>
+          <button class="tab" data-go="player">播放器</button>
+          <button class="tab" data-go="fixbeats">校正節拍</button>
+          <button class="tab" data-go="bigcount">全螢幕數拍</button>
         </div>
         <div class="phone-outer"><div class="phone" lang="zh-Hant-TW">
           <div class="island"></div>
@@ -442,106 +441,106 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
     <div class="panel">
 
       <section class="apanel on" id="pan-library">
-        <h2>Library</h2>
-        <p class="purpose">A launcher, not a destination. Projects persist — analysis runs once per track,
-          then every session is open-app → Play.</p>
-        <p class="chiplbl">States</p>
+        <h2>資料庫</h2>
+        <p class="purpose">只是個入口，不是目的地。專案會保存下來——每首歌只分析一次，
+          之後每次都是「開 App → 播放」。</p>
+        <p class="chiplbl">狀態</p>
         <div class="chips">
-          <button class="chip on" data-lib="default">Default</button>
-          <button class="chip" data-lib="empty">Empty (first launch)</button>
+          <button class="chip on" data-lib="default">預設</button>
+          <button class="chip" data-lib="empty">空白（首次啟動）</button>
         </div>
         <ul>
-          <li><b>Rows</b> show title, BPM · duration, and the saved speed when ≠ 1× — set a speed in the Player and come back to see it stick.</li>
-          <li><b>Second row</b> is mid-analysis (“Finding beats… 40%”) — tapping it would open the Player in its analyzing state.</li>
-          <li><b>Third row</b> is a video import: the audio track is being extracted first, then it joins the same pipeline. (Direct YouTube download is a permanent non-goal — save the file, then import.)</li>
-          <li><b>+</b> opens the system Files picker (audio: MP3/M4A/WAV · video: MP4/MOV). No naming step, no progress modal — it goes straight to the Player.</li>
-          <li>Swipe-to-delete with confirmation; context menu: Rename / Re-analyze / Delete. Duplicate imports are hash-detected (“Already in your library”).</li>
+          <li><b>歌曲列</b>顯示歌名、BPM · 長度；速度 ≠ 1× 時也會顯示——到播放器改個速度再回來看看。</li>
+          <li><b>第二列</b>正在分析（「正在偵測節拍… 40%」）——實機上點擊會直接進入分析中的播放器。</li>
+          <li><b>第三列</b>是影片匯入：先擷取音軌，之後流程與音訊完全相同。（直接下載 YouTube 永遠不做——請先把檔案存到裝置再匯入。）</li>
+          <li><b>+</b> 開啟系統檔案選擇器（音訊：MP3/M4A/WAV · 影片：MP4/MOV）。不用命名、沒有進度視窗——直接進播放器。</li>
+          <li>左滑刪除（有確認）；長按選單：重新命名 / 重新分析 / 刪除。重複匯入以雜湊值偵測（「已在資料庫中」）。</li>
         </ul>
-        <div class="try"><b>Try:</b> tap the first row to open the Player. Tap <b>+</b> to simulate a fresh import (picker → analyzing → ready).</div>
+        <div class="try"><b>試試看：</b>點第一列開啟播放器。點 <b>+</b> 模擬一次全新匯入（選檔 → 分析 → 就緒）。</div>
       </section>
 
       <section class="apanel" id="pan-player">
-        <h2>Player</h2>
-        <p class="purpose">The app. Giant count, phrase dots, beat-ticked waveform, transport, speed, template —
-          everything auto-saves; there is no Save button anywhere.</p>
-        <p class="chiplbl">States</p>
+        <h2>播放器</h2>
+        <p class="purpose">App 的本體。大字數拍、八拍圓點、節拍波形、播放控制、速度、模板——
+          所有設定自動儲存，整個 App 沒有任何「儲存」按鈕。</p>
+        <p class="chiplbl">狀態</p>
         <div class="chips">
-          <button class="chip on" data-pm="ready">Ready</button>
-          <button class="chip" data-pm="analyzing">Analyzing</button>
-          <button class="chip" data-pm="lowconf">Low confidence</button>
-          <button class="chip" data-pm="failed">Detection failed</button>
+          <button class="chip on" data-pm="ready">就緒</button>
+          <button class="chip" data-pm="analyzing">分析中</button>
+          <button class="chip" data-pm="lowconf">信心不足</button>
+          <button class="chip" data-pm="failed">偵測失敗</button>
         </div>
         <ul>
-          <li><b>Count display</b> — numeral at ~40% of screen height; “1” is tinted the accent; with the <b>1 &amp; 2 &amp;</b> template a half-size “&amp;” flashes between numerals. Screen never sleeps while playing.</li>
-          <li><b>Waveform</b> — accent ticks mark each “1” (downbeat). Scrubbing snaps to the nearest count 1, so every restart is phrase-aligned.</li>
-          <li><b>↺ 8</b> — jump to the top of the current 8-count: the drill-this-phrase button.</li>
-          <li><b>Speed</b> — pitch-preserving; the voice is never time-stretched, only re-scheduled, so counts stay crisp and locked at 0.5×.</li>
-          <li><b>Template switch</b> applies at the next “1” so counting never stutters mid-phrase.</li>
-          <li>Controls dim after 4 s of playback without touch; the count and dots never dim.</li>
+          <li><b>數拍顯示</b>——數字約佔螢幕高度 40%；「1」以強調色標示；切到 <b>1 &amp; 2 &amp;</b> 模板時，數字之間會閃出半尺寸的「&amp;」。播放時螢幕不會休眠。</li>
+          <li><b>波形</b>——強調色刻度標出每個「1」（重拍）。拖曳會吸附到最近的「1」，每次重播都從整句開始。</li>
+          <li><b>↺ 8</b>——跳回目前八拍的開頭：專門反覆練這一句用的按鈕。</li>
+          <li><b>速度</b>——變速不變調；人聲不做時間伸縮、只重新排程，所以 0.5× 時數拍依然乾淨、緊貼拍點。</li>
+          <li><b>模板切換</b>在下一個「1」才生效，數拍不會在句子中間打結。</li>
+          <li>播放 4 秒未觸碰後控制項變暗；數字與圓點永不變暗。</li>
         </ul>
-        <div class="try"><b>Try:</b> press <b>Play</b>, then switch to <b>1 &amp; 2 &amp;</b>, then tap <b>0.5×</b> —
-          the count slows but never unlocks from the beat. Drag the waveform and watch it snap to a “1”.</div>
+        <div class="try"><b>試試看：</b>按<b>播放</b>，切到 <b>1 &amp; 2 &amp;</b>，再點 <b>0.5×</b>——
+          數拍變慢但永遠不會脫拍。拖曳波形，看它吸附到「1」。</div>
       </section>
 
       <section class="apanel" id="pan-fixbeats">
-        <h2>Fix Beats 校正節拍 <span style="font-weight:400;color:var(--mut)">· sheet over the Player</span></h2>
-        <p class="purpose">Detection will sometimes be wrong — half/double tempo, a shifted grid, or the wrong “1”.
-          Each failure mode has a dedicated one-gesture fix, applied live while the music keeps playing.
-          Verification <em>is</em> playback: the voice against the music is the most sensitive error detector.</p>
-        <p class="chiplbl">Modes</p>
+        <h2>校正節拍 <span style="font-weight:400;color:var(--mut)">· 播放器上的面板</span></h2>
+        <p class="purpose">偵測有時會出錯——拍速快慢一倍、整體偏移、或「1」數錯位置。
+          每種錯誤都有專屬的一鍵修正，音樂不停、即時生效。
+          驗證<em>就是</em>播放本身：人聲對上原曲，是最靈敏的偵錯工具。</p>
+        <p class="chiplbl">模式</p>
         <div class="chips">
-          <button class="chip on" data-fm="normal">Corrections</button>
-          <button class="chip" data-fm="manual">Manual fallback (detection failed)</button>
+          <button class="chip on" data-fm="normal">校正</button>
+          <button class="chip" data-fm="manual">手動備援（偵測失敗時）</button>
         </div>
         <ul>
-          <li><b>數拍人聲 A/B</b> — instantly mute/unmute the voice to hear the raw track against your fix.</li>
-          <li><b>½× / 2×</b> (拍速) — the octave-error fix; labels preview the resulting BPM and disable outside 40–220.</li>
-          <li><b>−10 / +10 ms</b> (整體微調) — phase nudge with live cumulative readout; hold to repeat.</li>
-          <li><b>「1」往前 / 往後</b> — rotate which beat is “1”, deterministic and immune to touch latency. <b>點「1」</b> re-anchors the phrase to your tap (3+ rhythmic taps also re-fit the phase, latency-compensated).</li>
-          <li><b>復原</b> reverts the last correction; <b>重置</b> restores the detected grid. 完成 is dismissal — corrections were already live and saved.</li>
-          <li>Bluetooth output shows a delay warning; manual fallback is a two-step flow: tap the tempo until the BPM settles, then tap the “1”.</li>
+          <li><b>數拍人聲 A/B</b>——瞬間開關人聲，用原曲對照你的修正。</li>
+          <li><b>½× / 2×</b>（拍速）——修八度錯誤；按鈕先顯示結果 BPM，超出 40–220 會停用。</li>
+          <li><b>−10 / +10 ms</b>（整體微調）——相位微調，即時顯示累計值；長按連續調整。</li>
+          <li><b>「1」往前 / 往後</b>——逐拍旋轉「1」的位置，結果確定、不受觸控延遲影響。<b>點「1」</b>把最近的拍點設為「1」（有節奏地連點 3 下以上還會重新校正相位，並補償延遲）。</li>
+          <li><b>復原</b>回到上一步；<b>重置</b>還原偵測結果。「完成」只是關閉面板——修正早已即時生效並儲存。</li>
+          <li>藍牙輸出會顯示延遲警告；手動備援是兩步驟：先跟著節拍點出拍速，再點出「1」。</li>
         </ul>
-        <div class="try"><b>Try:</b> with playback running, tap <b>2×</b> and hear/see the count double — then <b>復原</b>.
-          Tap <b>「1」往後 ▶</b> and watch the accent “1” move through the phrase.</div>
+        <div class="try"><b>試試看：</b>播放中點 <b>2×</b>，看數拍變成兩倍快——再按<b>復原</b>。
+          點 <b>「1」往後 ▶</b>，看強調色的「1」在句中移動。</div>
       </section>
 
       <section class="apanel" id="pan-bigcount">
-        <h2>Big Count <span style="font-weight:400;color:var(--mut)">· full-screen overlay</span></h2>
-        <p class="purpose">For a phone propped across the room: the count at ~70% of the screen’s shorter side,
-          maximum contrast, portrait and landscape. A thin presentation layer over the Player’s state — not a separate screen.</p>
+        <h2>全螢幕數拍 <span style="font-weight:400;color:var(--mut)">· 覆疊層</span></h2>
+        <p class="purpose">手機立在房間對面練舞用：數字約佔螢幕短邊 70%、最高對比，直向橫向都支援。
+          它只是播放器狀態的一層外皮——不是另一個畫面。</p>
         <ul>
-          <li>Digit pulses subtly on each beat; an accent flash marks every “1”; “&amp;” renders half-size.</li>
-          <li>Phrase dots thick enough to read at 4 m; hairline song progress; current speed badged in the corner.</li>
-          <li><b>Single tap</b> summons oversized controls (Pause, ↺ 8, speed, Exit) that auto-hide after 4 s; two-finger double-tap always exits.</li>
-          <li>Keep-awake stays on even while paused here.</li>
+          <li>每一拍數字輕微脈動；每個「1」有強調色閃光；「&amp;」以半尺寸顯示。</li>
+          <li>八拍圓點粗到 4 公尺外也看得清楚；底部有極細進度條；角落顯示目前速度。</li>
+          <li><b>單點</b>叫出放大控制（暫停、↺ 8、速度、離開），4 秒後自動隱藏；雙指連點兩下隨時退出。</li>
+          <li>此模式下即使暫停也保持螢幕常亮。</li>
         </ul>
-        <div class="try"><b>Try:</b> tap anywhere to reveal the controls; press the big Pause; <b>離開</b> returns to the Player with state intact.</div>
+        <div class="try"><b>試試看：</b>點任意處叫出控制；按大暫停鍵；<b>離開</b>會帶著原本的狀態回到播放器。</div>
       </section>
 
       <div class="voicebox">
-        <button class="tgl" id="tgl-voice" role="switch" aria-checked="false" aria-label="Demo voice"></button>
-        <div><b>Demo voice</b>
-          <p>Speaks the counts using your browser’s TTS so you can hear the concept. It’s robotic and its timing
-             jitters — the real app ships a <em>recorded human voice</em>, sample-locked to the beat by the audio engine.
-             Open decision: whether the voice counts in English (“five, six, seven, eight” — common in Taiwan studios)
-             or in Mandarin (「一、二、三…」); the demo uses English.</p>
+        <button class="tgl" id="tgl-voice" role="switch" aria-checked="false" aria-label="示範語音"></button>
+        <div><b>示範語音</b>
+          <p>用瀏覽器的 TTS 唸出數拍，先聽個概念。它是機器音、時間也會抖——
+             正式 App 使用<em>真人錄音</em>，由音訊引擎精準鎖在拍點上。
+             待決定：人聲用英文數（five、six、seven、eight——台灣舞蹈教室常見）
+             還是中文數（一、二、三…）；此示範用英文。</p>
         </div>
       </div>
 
       <div class="pillars">
-        <h3>MVP pillars — what the code must get right</h3>
+        <h3>MVP 四大支柱——程式碼必須做對的事</h3>
         <div class="pgrid">
-          <div class="pcard"><b>Sync is the product</b><p>Voice onsets within ±30 ms of the beat at every speed, zero drift over a full song. One audio clock drives sound and screen.</p></div>
-          <div class="pcard"><b>Detection is fallible by design</b><p>Every failure mode (octave, phase, downbeat) has a labeled one-gesture fix, live over playback, persisted per project.</p></div>
-          <div class="pcard"><b>Analyze once</b><p>Projects cache analysis locally — reopening any track is instant. Cold launch resumes the last project: open-app → Play, 2 taps.</p></div>
-          <div class="pcard"><b>Audio + video in</b><p>MP3/M4A/WAV import, MP4/MOV audio extraction. Export of the mixed file is post-MVP, kept ~100 lines away by the engine design.</p></div>
+          <div class="pcard"><b>同步就是產品</b><p>任何速度下，人聲落點與拍點誤差 ≤ 30 ms，整首歌零漂移。聲音與畫面共用同一個音訊時鐘。</p></div>
+          <div class="pcard"><b>偵測本來就會錯</b><p>每種錯誤（八度、相位、重拍）都有明確的一鍵修正，播放中即時生效，隨專案保存。</p></div>
+          <div class="pcard"><b>只分析一次</b><p>分析結果快取在本機——重開任何歌曲都是秒開。冷啟動直接回到上次的專案：開 App → 播放，兩下搞定。</p></div>
+          <div class="pcard"><b>音訊＋影片皆可匯入</b><p>MP3/M4A/WAV 匯入、MP4/MOV 擷取音軌。混音輸出成檔案是 MVP 之後的事，引擎設計讓它只差約 100 行。</p></div>
         </div>
       </div>
 
       <footer>
-        Companion docs in the repo: <code>docs/SPEC.md</code> (product spec — screens, states, copy, edge cases)
-        and <code>docs/ARCHITECTURE.md</code> (beat detection, AVAudioEngine pipeline, persistence, testing).
-        This page is <code>design/mockup.html</code>.
+        完整文件在 repo：<code>docs/SPEC.md</code>（產品規格——畫面、狀態、文案、邊界情況）、
+        <code>docs/ARCHITECTURE.md</code>（節拍偵測、AVAudioEngine 管線、儲存、測試）。
+        本頁即 <code>design/mockup.html</code>。
       </footer>
     </div>
   </div>
