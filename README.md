@@ -27,6 +27,7 @@ Exporting the mix as a single audio file is a post-MVP stretch goal.
 | --- | --- |
 | [`docs/SPEC.md`](docs/SPEC.md) | Product spec: scope, screens, flows, edge cases |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Technical design: beat detection, audio pipeline, persistence |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Decision log with rationale, and the open questions |
 | [`design/mockup.html`](design/mockup.html) | Clickable HTML mockup source (Claude-artifact format, no HTML skeleton) |
 | [**Live mockup**](https://dtes8617.github.io/beatcount-ios/) | The same mockup served via GitHub Pages — `index.html` is generated from `design/mockup.html` by adding the doctype/head wrapper |
 
