@@ -164,6 +164,8 @@ Voices/en/instructor_f1/
 
 `pCenterMs` — the measured offset from buffer start to the word's perceptual onset (vowel, e.g. the "ONE" in "w-ONE") — is subtracted at schedule time. This one number per asset is what makes counts feel locked.
 
+Because the manifest carries `locale`, a Mandarin counting voice (`Voices/zh-Hant/…` — 「一…八」 plus a short sub-beat syllable) is a pure content drop with zero code changes, whichever count language ships first.
+
 **Sourcing plan.** Self-record in one session (48 kHz/24-bit WAV, fixed mic distance, to a ~100 BPM metronome in headphones, 3+ takes per word) → scripted sox/ffmpeg/afconvert cleanup (~one evening total). Zero licensing ambiguity — owned master, App Store safe. Fallback if the takes lack energy: **ElevenLabs Starter ($5, paid tier = commercial output rights** — subscribe *before* generating; archive invoices). Post-MVP extra voices: Fiverr with the perpetual "For Commercial Use" license. Dev placeholders: pre-rendered `AVSpeechSynthesizer.write(_:toBufferCallback:)` / macOS `say` output under `Voices/en/placeholder_tts/` with the identical structure — the real voice is a file swap; never synthesize live in the shipping app.
 
 ---
@@ -187,6 +189,8 @@ tools/analysis-oracle/   desktop Python venv (librosa/madmom) — dev-only, neve
 ```
 
 State: `@Observable` view models per screen; `PlaybackEngine` is a single actor-ish controller owned at the app level (it must outlive screen churn and host the audio-session observers). No third-party packages.
+
+**Localization:** development language stays English (code, string keys, this spec), but the shipped UI is **Traditional Chinese (zh-TW)** — the target users are dancers in Taiwan. All user-facing strings go through one String Catalog (`Localizable.xcstrings`) with a complete zh-TW table from day one (the design mockup carries the reviewed zh-TW copy); English remains as the fallback locale. Voice-count language is independent of UI language and manifest-driven (§6) — an English-counting voice under a zh-TW UI is a valid (and likely) combination.
 
 ---
 

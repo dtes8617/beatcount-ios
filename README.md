@@ -5,6 +5,8 @@ with a human voice counting **"1 2 3 4 5 6 7 8"** (and **"&"** sub-beats) in per
 with a large on-screen count display you can read from across the room.
 
 > **Status:** spec & design phase — no code yet.
+>
+> **Target users:** dancers in Taiwan — the UI ships in Traditional Chinese (zh-TW).
 
 ## Core loop (MVP)
 

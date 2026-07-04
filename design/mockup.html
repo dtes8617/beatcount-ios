@@ -83,7 +83,7 @@ h1{
   .phone{transform:scale(.8);transform-origin:top center;margin-bottom:-162px}
 }
 .screen{position:absolute;inset:0;display:none;flex-direction:column;color:var(--p-text);
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC",system-ui,sans-serif}
 .screen.on{display:flex}
 .statusbar{height:54px;flex:none}
 
@@ -243,7 +243,8 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
     <p class="lede">Import a song, let the app find the beats, and practice to a human voice counting
       dance 8-counts — with a count display readable from across the room. This mockup is a working
       simulation: the count runs, the templates switch, the speed chips change the rate.</p>
-    <p class="meta"><strong>Uptown Funk (practice edit)</strong> · 115 BPM · 4:31 — the demo track driving every screen below.</p>
+    <p class="meta"><strong>Uptown Funk (practice edit)</strong> · 115 BPM · 4:31 — the demo track driving every screen below.
+       UI locale: <strong>Traditional Chinese (zh-TW)</strong> — target users are dancers in Taiwan; annotations on this page stay in English.</p>
   </header>
 
   <nav class="flow" aria-label="Screen flow">
@@ -264,14 +265,14 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
           <button class="tab" data-go="fixbeats">Fix Beats</button>
           <button class="tab" data-go="bigcount">Big Count</button>
         </div>
-        <div class="phone-outer"><div class="phone">
+        <div class="phone-outer"><div class="phone" lang="zh-Hant-TW">
           <div class="island"></div>
 
           <!-- Library -->
           <div class="screen on" id="scr-library">
             <div class="statusbar"></div>
             <div class="lib-nav"><h2>BeatCount</h2>
-              <button class="addbtn" id="btn-add" aria-label="Import Music or Video">+</button></div>
+              <button class="addbtn" id="btn-add" aria-label="匯入音樂或影片">+</button></div>
             <div class="rows" id="lib-rows">
               <div class="row" id="row-main">
                 <div class="thumb"><canvas id="thumbwave" width="104" height="68" style="width:52px;height:34px"></canvas></div>
@@ -281,23 +282,23 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
               <div class="row">
                 <div class="thumb"></div>
                 <div><div class="t1">Levitating</div>
-                     <div class="t2">Finding beats… 40%</div></div>
+                     <div class="t2">正在偵測節拍… 40%</div></div>
                 <div class="ring"></div>
               </div>
               <div class="row">
                 <div class="thumb"></div>
                 <div><div class="t1">GoldenHour.mp4</div>
-                     <div class="t2">Extracting audio…</div></div>
+                     <div class="t2">正在擷取音訊…</div></div>
                 <div class="ring"></div>
               </div>
             </div>
             <div class="lib-empty" id="lib-empty" style="display:none">
               <div class="note-ico">♫</div>
-              <h3>No songs yet</h3>
-              <p>Import a song or video and BeatCount will find the beats and count you in.</p>
-              <button class="cta" id="btn-empty-import">Import Music or Video</button>
-              <p class="foot">BeatCount can’t download from YouTube or streaming apps.
-                 Save the audio or video file to your device first, then import it here.</p>
+              <h3>還沒有歌曲</h3>
+              <p>匯入歌曲或影片，BeatCount 會自動偵測節拍、開口幫你數拍。</p>
+              <button class="cta" id="btn-empty-import">匯入音樂或影片</button>
+              <p class="foot">BeatCount 無法從 YouTube 或串流服務下載音樂。
+                 請先把音訊或影片檔儲存到裝置，再從這裡匯入。</p>
             </div>
           </div>
 
@@ -305,10 +306,10 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
           <div class="screen" id="scr-player">
             <div class="statusbar"></div>
             <div class="topbar">
-              <button class="back" data-go="library">‹ Library</button>
+              <button class="back" data-go="library">‹ 資料庫</button>
               <span class="title">Uptown Funk (practice edit)</span>
-              <button class="act" id="btn-fix">Fix Beats</button>
-              <button class="act" data-go="bigcount" aria-label="Full-Screen Count">⤢</button>
+              <button class="act" id="btn-fix">校正節拍</button>
+              <button class="act" data-go="bigcount" aria-label="全螢幕數拍">⤢</button>
             </div>
             <div class="countzone" id="pz">
               <div id="p-ready">
@@ -319,18 +320,18 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
               </div>
               <div id="p-analyzing" class="analyz" style="display:none">
                 <div class="pring" id="pring"><b id="ppct">0%</b></div>
-                <div class="cap">Finding beats…</div>
-                <div class="cap" style="font-size:12px;opacity:.7">Counts start when analysis finishes.</div>
+                <div class="cap">正在偵測節拍…</div>
+                <div class="cap" style="font-size:12px;opacity:.7">分析完成後就會開始數拍。</div>
               </div>
               <div id="p-failed" class="failed" style="display:none">
-                <h4>Couldn’t find the beats</h4>
-                <div class="cap">This can happen with speech, ambience, or very quiet tracks.</div>
+                <h4>找不到節拍</h4>
+                <div class="cap">語音、環境音或音量很低的音軌可能會發生這種情況。</div>
                 <div class="btns">
-                  <button class="sbtn" id="btn-retry">Try Again</button>
-                  <button class="sbtn primary" id="btn-manual">Tap Beats Myself</button>
+                  <button class="sbtn" id="btn-retry">再試一次</button>
+                  <button class="sbtn primary" id="btn-manual">自己點拍</button>
                 </div>
               </div>
-              <div class="conf" id="conf" style="display:none">Detection wasn’t confident — listen closely, and tap Fix Beats if it’s off.</div>
+              <div class="conf" id="conf" style="display:none">偵測結果不太確定——請仔細聽，覺得不準就點「校正節拍」。</div>
             </div>
             <div class="wavebox"><canvas class="wave" id="wave"></canvas></div>
             <div class="transport">
@@ -339,73 +340,73 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
               <button class="playbtn" id="btn-play" aria-label="Play">▶</button>
               <span class="tlabel" style="text-align:right" id="t-tot">4:31</span>
             </div>
-            <div class="ctlrow"><div class="lbl">Speed</div>
+            <div class="ctlrow"><div class="lbl">速度</div>
               <div class="seg" id="seg-speed">
                 <button data-r="0.5">0.5×</button><button data-r="0.75">0.75×</button>
                 <button data-r="0.9">0.9×</button><button data-r="1" class="on">1×</button>
                 <button data-r="1.25">1.25×</button>
               </div></div>
-            <div class="ctlrow"><div class="lbl">Counts</div>
+            <div class="ctlrow"><div class="lbl">數拍</div>
               <div class="seg" id="seg-tpl">
                 <button data-t="eight" class="on">1 – 8</button>
                 <button data-t="eightAnd">1 &amp; 2 &amp;</button>
               </div></div>
             <div class="volrow"><span class="ic">🔊</span>
-              <input type="range" id="vvol" min="0" max="100" value="85" aria-label="Count voice volume">
+              <input type="range" id="vvol" min="0" max="100" value="85" aria-label="數拍人聲音量">
             </div>
 
             <!-- Fix Beats sheet -->
             <div class="sheet" id="sheet">
               <div class="grab"></div>
               <div class="sh-head">
-                <span class="bpm" id="sh-bpm">Detected: 115.0 BPM</span>
+                <span class="bpm" id="sh-bpm">偵測結果：115.0 BPM</span>
                 <span class="sp"></span>
-                <button class="txtbtn" id="btn-undo">Undo</button>
-                <button class="txtbtn" id="btn-reset">Reset</button>
-                <button class="txtbtn" id="btn-done"><b>Done</b></button>
+                <button class="txtbtn" id="btn-undo">復原</button>
+                <button class="txtbtn" id="btn-reset">重置</button>
+                <button class="txtbtn" id="btn-done"><b>完成</b></button>
               </div>
               <div class="sh-body" id="sh-normal">
                 <div class="fixrow switch"><div>
-                    <div class="lbl" style="margin-bottom:2px">Counts</div>
-                    <div class="cap" style="margin-top:0">A/B the voice against the raw music.</div></div>
-                  <button class="tgl on" id="tgl-counts" role="switch" aria-checked="true" aria-label="Counts on"></button>
+                    <div class="lbl" style="margin-bottom:2px">數拍人聲</div>
+                    <div class="cap" style="margin-top:0">快速開關人聲，與原曲 A/B 對照。</div></div>
+                  <button class="tgl on" id="tgl-counts" role="switch" aria-checked="true" aria-label="數拍人聲開關"></button>
                 </div>
-                <div class="fixrow"><div class="lbl">Tempo</div>
+                <div class="fixrow"><div class="lbl">拍速</div>
                   <div class="btnpair">
                     <button class="sbtn" id="btn-half">½× → 57.5</button>
                     <button class="sbtn" id="btn-dbl">2× → 230</button>
                   </div>
-                  <div class="cap">Counts feel twice too fast? Halve. Half as fast? Double.</div>
+                  <div class="cap">覺得數拍快了一倍？按 ½×。慢了一半？按 2×。</div>
                 </div>
-                <div class="fixrow"><div class="lbl"><span>Shift</span><b id="lbl-shift">0 ms</b></div>
+                <div class="fixrow"><div class="lbl"><span>整體微調</span><b id="lbl-shift">0 ms</b></div>
                   <div class="btnpair">
                     <button class="sbtn" id="btn-m10">−10 ms</button>
                     <button class="sbtn" id="btn-p10">+10 ms</button>
                   </div>
-                  <div class="cap">Counts early or late? Nudge until the voice lands on the beat.</div>
+                  <div class="cap">數拍偏早或偏晚？微調到人聲剛好落在拍點上。</div>
                 </div>
-                <div class="fixrow"><div class="lbl">The “1”</div>
+                <div class="fixrow"><div class="lbl">「1」的位置</div>
                   <div class="btnpair">
-                    <button class="sbtn" id="btn-s1l">Shift 1 ◀</button>
-                    <button class="sbtn" id="btn-s1r">Shift 1 ▶</button>
+                    <button class="sbtn" id="btn-s1l">「1」往前 ◀</button>
+                    <button class="sbtn" id="btn-s1r">「1」往後 ▶</button>
                   </div>
                   <div style="margin-top:8px">
-                    <button class="tappad" id="tap1">TAP ON 1</button>
-                    <div class="cap">Tap this on every count 1 you hear.</div>
+                    <button class="tappad" id="tap1">點「1」</button>
+                    <div class="cap">聽到「1」就點一下。</div>
                   </div>
                 </div>
-                <div class="btcap" id="btcap">Wireless audio adds delay — for precise timing fixes, use the speaker or wired headphones.</div>
+                <div class="btcap" id="btcap">無線耳機會有延遲——要精準校正時，請改用喇叭或有線耳機。</div>
               </div>
               <div class="sh-body" id="sh-manual" style="display:none">
                 <div class="fixrow" id="man-step1">
-                  <div class="lbl">Step 1 · Tap the tempo</div>
-                  <button class="tappad" id="tap-tempo" style="padding:26px 16px">TAP WITH THE BEAT</button>
-                  <div class="cap" id="man-cap">Tap along with the beat — keep tapping until the number settles.</div>
+                  <div class="lbl">步驟 1 · 點出拍速</div>
+                  <button class="tappad" id="tap-tempo" style="padding:26px 16px">跟著節拍點</button>
+                  <div class="cap" id="man-cap">跟著節拍持續點擊，直到數字穩定下來。</div>
                 </div>
                 <div class="fixrow" id="man-step2" style="display:none">
-                  <div class="lbl">Step 2 · Tap the 1</div>
-                  <button class="tappad" id="tap-one" style="padding:26px 16px">TAP ON A COUNT 1</button>
-                  <div class="cap">One tap on any downbeat — the nearest beat becomes “1”.</div>
+                  <div class="lbl">步驟 2 · 點出「1」</div>
+                  <button class="tappad" id="tap-one" style="padding:26px 16px">在「1」的時候點一下</button>
+                  <div class="cap">在任何一個「1」上點一下——最近的拍點會變成「1」。</div>
                 </div>
               </div>
             </div>
@@ -423,7 +424,7 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
               <div class="bc-prog"><i id="bc-prog"></i></div>
             </div>
             <div class="bc-ctl" id="bc-ctl">
-              <button class="bc-exit" data-go="player">Exit</button>
+              <button class="bc-exit" data-go="player">離開</button>
               <button class="r8" id="bc-r8" style="color:#fff"><span>↺</span>8</button>
               <button class="playbtn" id="bc-play" aria-label="Play or pause">▶</button>
               <div class="bc-speed">
@@ -483,7 +484,7 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
       </section>
 
       <section class="apanel" id="pan-fixbeats">
-        <h2>Fix Beats <span style="font-weight:400;color:var(--mut)">· sheet over the Player</span></h2>
+        <h2>Fix Beats 校正節拍 <span style="font-weight:400;color:var(--mut)">· sheet over the Player</span></h2>
         <p class="purpose">Detection will sometimes be wrong — half/double tempo, a shifted grid, or the wrong “1”.
           Each failure mode has a dedicated one-gesture fix, applied live while the music keeps playing.
           Verification <em>is</em> playback: the voice against the music is the most sensitive error detector.</p>
@@ -493,15 +494,15 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
           <button class="chip" data-fm="manual">Manual fallback (detection failed)</button>
         </div>
         <ul>
-          <li><b>Counts A/B</b> — instantly mute/unmute the voice to hear the raw track against your fix.</li>
-          <li><b>½× / 2×</b> — the octave-error fix; labels preview the resulting BPM and disable outside 40–220.</li>
-          <li><b>−10 / +10 ms</b> — phase nudge with live cumulative readout; hold to repeat.</li>
-          <li><b>Shift 1 ◀▶</b> — rotate which beat is “1”, deterministic and immune to touch latency. <b>TAP ON 1</b> re-anchors the phrase to your tap (3+ rhythmic taps also re-fit the phase, latency-compensated).</li>
-          <li><b>Undo</b> reverts the last correction; <b>Reset</b> restores the detected grid. Done is dismissal — corrections were already live and saved.</li>
+          <li><b>數拍人聲 A/B</b> — instantly mute/unmute the voice to hear the raw track against your fix.</li>
+          <li><b>½× / 2×</b> (拍速) — the octave-error fix; labels preview the resulting BPM and disable outside 40–220.</li>
+          <li><b>−10 / +10 ms</b> (整體微調) — phase nudge with live cumulative readout; hold to repeat.</li>
+          <li><b>「1」往前 / 往後</b> — rotate which beat is “1”, deterministic and immune to touch latency. <b>點「1」</b> re-anchors the phrase to your tap (3+ rhythmic taps also re-fit the phase, latency-compensated).</li>
+          <li><b>復原</b> reverts the last correction; <b>重置</b> restores the detected grid. 完成 is dismissal — corrections were already live and saved.</li>
           <li>Bluetooth output shows a delay warning; manual fallback is a two-step flow: tap the tempo until the BPM settles, then tap the “1”.</li>
         </ul>
-        <div class="try"><b>Try:</b> with playback running, tap <b>2×</b> and hear/see the count double — then <b>Undo</b>.
-          Tap <b>Shift 1 ▶</b> and watch the accent “1” move through the phrase.</div>
+        <div class="try"><b>Try:</b> with playback running, tap <b>2×</b> and hear/see the count double — then <b>復原</b>.
+          Tap <b>「1」往後 ▶</b> and watch the accent “1” move through the phrase.</div>
       </section>
 
       <section class="apanel" id="pan-bigcount">
@@ -514,14 +515,16 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12
           <li><b>Single tap</b> summons oversized controls (Pause, ↺ 8, speed, Exit) that auto-hide after 4 s; two-finger double-tap always exits.</li>
           <li>Keep-awake stays on even while paused here.</li>
         </ul>
-        <div class="try"><b>Try:</b> tap anywhere to reveal the controls; press the big Pause; Exit returns to the Player with state intact.</div>
+        <div class="try"><b>Try:</b> tap anywhere to reveal the controls; press the big Pause; <b>離開</b> returns to the Player with state intact.</div>
       </section>
 
       <div class="voicebox">
         <button class="tgl" id="tgl-voice" role="switch" aria-checked="false" aria-label="Demo voice"></button>
         <div><b>Demo voice</b>
           <p>Speaks the counts using your browser’s TTS so you can hear the concept. It’s robotic and its timing
-             jitters — the real app ships a <em>recorded human voice</em>, sample-locked to the beat by the audio engine.</p>
+             jitters — the real app ships a <em>recorded human voice</em>, sample-locked to the beat by the audio engine.
+             Open decision: whether the voice counts in English (“five, six, seven, eight” — common in Taiwan studios)
+             or in Mandarin (「一、二、三…」); the demo uses English.</p>
         </div>
       </div>
 
@@ -676,7 +679,7 @@ function setPlay(on){
   S.playing=on;
   $('btn-play').textContent=on?'❚❚':'▶';
   $('bc-play').textContent=on?'❚❚':'▶';
-  $('btn-play').setAttribute('aria-label',on?'Pause':'Play');
+  $('btn-play').setAttribute('aria-label',on?'暫停':'播放');
   if(on){num.classList.remove('dim');lastTs=null;if(!raf)raf=requestAnimationFrame(tick)}
 }
 $('btn-play').addEventListener('click',function(){setPlay(!S.playing)});
@@ -713,7 +716,7 @@ function snap(){return{bpmMult:S.bpmMult,phaseMs:S.phaseMs,anchor:S.anchor}}
 function pushUndo(){S.prev=snap()}
 function refreshFix(){
   var eff=bpm(), det=SONG.bpm;
-  var txt=(S.bpmMult===1&&S.phaseMs===0)?('Detected: '+det.toFixed(1)+' BPM')
+  var txt=(S.bpmMult===1&&S.phaseMs===0)?('偵測結果：'+det.toFixed(1)+' BPM')
         :(det.toFixed(1)+' → '+eff.toFixed(1)+' BPM'+(S.phaseMs?' · '+(S.phaseMs>0?'+':'')+S.phaseMs+' ms':''));
   $('sh-bpm').textContent=txt;
   var h=eff/2,d=eff*2;
@@ -760,7 +763,7 @@ function setFM(fm){
     c.classList.toggle('on',c.getAttribute('data-fm')===fm);
   });
   if(fm==='manual'){taps=[];$('man-step1').style.display='block';$('man-step2').style.display='none';
-    $('man-cap').textContent='Tap along with the beat — keep tapping until the number settles.'}
+    $('man-cap').textContent='跟著節拍持續點擊，直到數字穩定下來。'}
 }
 document.querySelectorAll('.chip[data-fm]').forEach(function(c){
   c.addEventListener('click',function(){go('player');openSheet(true);setFM(c.getAttribute('data-fm'))});
@@ -771,9 +774,9 @@ $('tap-tempo').addEventListener('click',function(){
     var ivs=[],i;for(i=1;i<taps.length;i++)ivs.push(taps[i]-taps[i-1]);
     var mean=ivs.reduce(function(a,b){return a+b},0)/ivs.length;
     var est=Math.min(220,Math.max(40,60000/mean));
-    $('man-cap').textContent='≈ '+est.toFixed(1)+' BPM · Keep tapping… '+Math.min(taps.length,8)+'/8';
+    $('man-cap').textContent='≈ '+est.toFixed(1)+' BPM · 繼續點… '+Math.min(taps.length,8)+'/8';
     if(taps.length>=8){$('man-step1').style.display='none';$('man-step2').style.display='block'}
-  } else $('man-cap').textContent='Keep tapping… 1/8';
+  } else $('man-cap').textContent='繼續點… 1/8';
 });
 $('tap-one').addEventListener('click',function(){
   var i=idxAt(S.t);S.anchor=((i%8)+8)%8;setFM('normal');drawWave();refreshFix();

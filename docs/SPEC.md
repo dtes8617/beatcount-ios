@@ -18,7 +18,8 @@ BeatCount turns any song into a dance-practice track: import a music or video fi
 | Speed | Pitch-preserving 0.5× / 0.75× / 0.9× / 1× / 1.25×; counts stay locked at every speed | Persists per project |
 | Corrections | Halve/double tempo, ±10 ms phase nudge, downbeat rotation (steppers + tap-on-1), manual tap-tempo fallback, Counts On/Off A/B, single-step Undo, Reset to Detected | Live over playback; persist per project |
 | Persistence | Local project library: copied audio, cached analysis, all settings & corrections; auto-save everywhere (no Save button) | Cold launch resumes the last-opened project |
-| Voice | ONE human voice: "one"…"eight" + short "and" | |
+| Voice | ONE human voice: "one"…"eight" + short "and" | Count language (English vs Mandarin 一…八) is an owner decision; English is the working default — common in Taiwan dance studios |
+| Localization | UI ships in **Traditional Chinese (zh-TW)** — target users are dancers in Taiwan | UI copy in this spec is the English design source; every string ships through a String Catalog with a complete zh-TW translation (see mockup for the zh-TW copy) |
 
 ### Non-goals (explicit)
 
